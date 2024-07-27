@@ -77,6 +77,24 @@ async function run() {
       res.send(result);
     });
 
+    // Post Related Api's
+    app.post("/post", async (req, res) => {
+      const postData = req.body;
+      const result = await postCollection.insertOne(postData);
+      res.send(result);
+    });
+
+    app.get("/post", async (req, res) => {
+      const result = await postCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/post/:email", async(req, res) => {
+      const email = req.params.email;
+      const findData = await postCollection.findOne(email);
+      res.send(findData);
+    });
+
     // Feedback Related Api's
     app.post("/feedback", async (req, res) => {
       const feedbackData = req.body;
