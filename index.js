@@ -39,7 +39,7 @@ async function run() {
     const postCollection = database.collection("posts");
     const userCollection = database.collection("users");
 
-    // Define the API endpoints
+    // Projects Related Api's
     app.post("/projects", async (req, res) => {
       const projectData = req.body;
       const result = await projectCollection.insertOne(projectData);
@@ -57,7 +57,8 @@ async function run() {
       const result = await projectCollection.deleteOne(query);
       res.send(result);
     });
-    
+
+    // Occasions Related Api's
     app.post("/occasions", async (req, res) => {
       const occasionsData = req.body;
       const result = await occasionsCollection.insertOne(occasionsData);
@@ -76,8 +77,24 @@ async function run() {
       res.send(result);
     });
 
+    // Feedback Related Api's
+    app.post("/feedback", async (req, res) => {
+      const feedbackData = req.body;
+      const result = contactCollection.insertOne(feedbackData);
+      res.send(result);
+    });
 
+    app.get("/feedback", async (req, res) => {
+      const feedback = await contactCollection.find().toArray();
+      res.send(feedback);
+    });
 
+    app.delete("/feedback/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await contactCollection.deleteOne(query);
+      res.send(result);
+    });
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
   }
