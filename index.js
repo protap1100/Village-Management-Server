@@ -58,6 +58,20 @@ async function run() {
       res.send(result);
     });
 
+    // User's Related Api's
+    app.post("/register", async (req, res) => {
+      const userInfo = req.body;
+      const result = await userCollection.insertOne(userInfo);
+      res.send(result);
+    });
+
+    app.get("/logged-user/:email", async (req, res) => {
+      const userEmail = req.params.email;
+      const filter = { email: userEmail };
+      const singleUser = await userCollection.findOne(filter);
+      res.send(singleUser);
+    });
+
     // Occasions Related Api's
     app.post("/occasions", async (req, res) => {
       const occasionsData = req.body;
@@ -89,10 +103,53 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/post/:email", async(req, res) => {
-      const email = req.params.email;
-      const findData = await postCollection.findOne(email);
+    app.get("/post-details/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const result = await postCollection.findOne(filter);
+      res.send(result);
+    });
+
+    app.post("/post/:user_email", async (req, res) => {
+      const email = req.params.user_email;
+      console.log(email);
+      const query = { user_email: email };
+      const findData = await postCollection.find(query).toArray();
       res.send(findData);
+    });
+
+    app.post("/post/:id/comments", async (req, res) => {
+      const id = req.params.id;
+      const { comment, author, photo } = req.body;
+      const filter = { _id: new ObjectId(id) };
+
+      try {
+        const post = await postCollection.findOne(filter);
+        if (!post) {
+          return res.status(404).send({ message: "Post not found" });
+        }
+        const newComment = {
+          text: comment,
+          author: author || "Anonymous",
+          timestamp: new Date(),
+          photo: photo,
+        };
+        const updateResult = await postCollection.updateOne(filter, {
+          $push: { comment: newComment },
+        });
+        if (updateResult.modifiedCount > 0) {
+          res.status(200).send(newComment);
+        } else {
+          res.status(400).send({ message: "Failed to add comment" });
+        }
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: "Server error" });
+      }
+    });
+
+    app.post("/post/:id/likes", async (req, res) => {
+      const id = req.params.id;
     });
 
     // Feedback Related Api's
