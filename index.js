@@ -149,7 +149,38 @@ async function run() {
     });
 
     app.post("/post/:id/likes", async (req, res) => {
-      const id = req.params.id;
+      const postId = req.params.id;
+      const userId = req.body.userId; 
+      if (!ObjectId.isValid(postId)) {
+        return res.status(400).send({ message: "Invalid post ID" });
+      }
+      if (!ObjectId.isValid(userId)) {
+        return res.status(400).send({ message: "Invalid user ID" });
+      }
+      try {
+        const filter = { _id: new ObjectId(postId) };
+        const post = await postCollection.findOne(filter);
+        if (!post) {
+          return res.status(404).send({ message: "Post not found" });
+        }
+        if (post.likes && post.likes.includes(userId)) {
+          return res
+            .status(400)
+            .send({ message: "User has already liked this post" });
+        }
+        const updateResult = await postCollection.updateOne(filter, {
+          $push: { likes: userId },
+        });
+        console.log(updateResult)
+        if (updateResult.modifiedCount > 0) {
+          res.status(200).send({ message: "Like added successfully" });
+        } else {
+          res.status(400).send({ message: "Failed to add like" });
+        }
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: "Server error" });
+      }
     });
 
     // Feedback Related Api's
