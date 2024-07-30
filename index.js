@@ -151,6 +151,7 @@ async function run() {
     app.post("/post/:id/likes", async (req, res) => {
       const postId = req.params.id;
       const userId = req.body.userId; 
+      console.log(userId)
       if (!ObjectId.isValid(postId)) {
         return res.status(400).send({ message: "Invalid post ID" });
       }
