@@ -120,7 +120,7 @@ async function run() {
 
     app.post("/post/:id/comments", async (req, res) => {
       const id = req.params.id;
-      const { comment, author, photo } = req.body;
+      const { comment, author, photo, commentUser, uniqueId } = req.body;
       const filter = { _id: new ObjectId(id) };
 
       try {
@@ -133,6 +133,8 @@ async function run() {
           author: author || "Anonymous",
           timestamp: new Date(),
           photo: photo,
+          commentUser: commentUser,
+          uniqueId: uniqueId,
         };
         const updateResult = await postCollection.updateOne(filter, {
           $push: { comment: newComment },
@@ -150,8 +152,8 @@ async function run() {
 
     app.post("/post/:id/likes", async (req, res) => {
       const postId = req.params.id;
-      const userId = req.body.userId; 
-      console.log(userId)
+      const userId = req.body.userId;
+      // console.log(userId)
       if (!ObjectId.isValid(postId)) {
         return res.status(400).send({ message: "Invalid post ID" });
       }
@@ -172,11 +174,34 @@ async function run() {
         const updateResult = await postCollection.updateOne(filter, {
           $push: { likes: userId },
         });
-        console.log(updateResult)
+        console.log(updateResult);
         if (updateResult.modifiedCount > 0) {
           res.status(200).send({ message: "Like added successfully" });
         } else {
           res.status(400).send({ message: "Failed to add like" });
+        }
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: "Server error" });
+      }
+    });
+
+    // Implementing the DELETE request for deleting a comment
+    app.delete("/post/:id/comment/:uniqueId", async (req, res) => {
+      const postId = req.params.id;
+      const uniqueId = req.params.uniqueId;
+      if (!ObjectId.isValid(postId)) {
+        return res.status(400).send({ message: "Invalid post ID" });
+      }
+      try {
+        const filter = { _id: new ObjectId(postId) };
+        const updateResult = await postCollection.updateOne(filter, {
+          $pull: { comment: { uniqueId: uniqueId } },
+        });
+        if (updateResult.modifiedCount > 0) {
+          res.status(200).send({ message: "Comment deleted successfully" });
+        } else {
+          res.status(400).send({ message: "Failed to delete comment" });
         }
       } catch (error) {
         console.error(error);
