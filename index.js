@@ -69,6 +69,7 @@ async function run() {
       const userEmail = req.params.email;
       const filter = { email: userEmail };
       const singleUser = await userCollection.findOne(filter);
+      // console.log(singleUser)
       res.send(singleUser);
     });
 
@@ -110,9 +111,9 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/post/:user_email", async (req, res) => {
+    app.get("/post/:user_email", async (req, res) => {
       const email = req.params.user_email;
-      console.log(email);
+      // console.log(email);
       const query = { user_email: email };
       const findData = await postCollection.find(query).toArray();
       res.send(findData);
@@ -174,7 +175,7 @@ async function run() {
         const updateResult = await postCollection.updateOne(filter, {
           $push: { likes: userId },
         });
-        console.log(updateResult);
+        // console.log(updateResult);
         if (updateResult.modifiedCount > 0) {
           res.status(200).send({ message: "Like added successfully" });
         } else {
@@ -186,7 +187,6 @@ async function run() {
       }
     });
 
-    // Implementing the DELETE request for deleting a comment
     app.delete("/post/:id/comment/:uniqueId", async (req, res) => {
       const postId = req.params.id;
       const uniqueId = req.params.uniqueId;
@@ -208,6 +208,30 @@ async function run() {
         res.status(500).send({ message: "Server error" });
       }
     });
+
+    app.get("/post/:email", async (req, res) => {
+      const userEmail = req.params.email;
+      const filter = { email: userEmail };
+      const findPost = await postCollection.find(filter).toArray();
+      res.send(findPost);
+    });
+
+    app.delete("/post-delete/:user_id", async (req, res) => {
+      try {
+        const userId = req.params.user_id;
+        const filter = { user_id: userId };
+        const result = await postCollection.deleteOne(filter);
+        if (result.deletedCount === 0) {
+          return res.status(404).json({ message: 'Post not found' });
+        }
+        console.log(`Post with user_id ${userId} deleted.`);
+        res.status(200).json({ message: 'Post deleted successfully' });
+      } catch (error) {
+        console.error(`Error deleting post with user_id ${req.params.user_id}:`, error);
+        res.status(500).json({ message: 'Internal Server Error' });
+      }
+    });
+    
 
     // Feedback Related Api's
     app.post("/feedback", async (req, res) => {
