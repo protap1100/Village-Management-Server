@@ -51,6 +51,13 @@ async function run() {
       res.send(projects);
     });
 
+    app.get("/project-details/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await projectCollection.findOne(query);
+      res.send(result);
+    });
+
     app.delete("/projects/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -63,6 +70,27 @@ async function run() {
       const userInfo = req.body;
       const result = await userCollection.insertOne(userInfo);
       res.send(result);
+    });
+
+    app.get("/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.delete("/users-delete/:id", async (req, res) => {
+      const userId = req.params.id;
+      const filter = { _id: new ObjectId(userId) };
+      const user = await userCollection.findOne(filter);
+      const deleteUserResult = await userCollection.deleteOne(filter);
+      const deletePostsResult = await postCollection.deleteMany({
+        user_id: userId,
+      });
+      // console.log(`User with id ${userId} and their posts were deleted.`);
+      res.status(200).send({
+        message: "User and their posts deleted successfully",
+        userDeleted: deleteUserResult.deletedCount,
+        postsDeleted: deletePostsResult.deletedCount,
+      });
     });
 
     app.get("/logged-user/:email", async (req, res) => {
@@ -85,6 +113,13 @@ async function run() {
       res.send(occasions);
     });
 
+    app.get("/occasions/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await occasionsCollection.findOne(query);
+      res.send(result);
+    });
+
     app.delete("/occasions/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -101,6 +136,12 @@ async function run() {
 
     app.get("/post", async (req, res) => {
       const result = await postCollection.find().toArray();
+      res.send(result);
+    });
+    app.delete("/post-delete/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const result = await postCollection.deleteOne(filter);
       res.send(result);
     });
 
@@ -222,16 +263,18 @@ async function run() {
         const filter = { user_id: userId };
         const result = await postCollection.deleteOne(filter);
         if (result.deletedCount === 0) {
-          return res.status(404).json({ message: 'Post not found' });
+          return res.status(404).json({ message: "Post not found" });
         }
         console.log(`Post with user_id ${userId} deleted.`);
-        res.status(200).json({ message: 'Post deleted successfully' });
+        res.status(200).json({ message: "Post deleted successfully" });
       } catch (error) {
-        console.error(`Error deleting post with user_id ${req.params.user_id}:`, error);
-        res.status(500).json({ message: 'Internal Server Error' });
+        console.error(
+          `Error deleting post with user_id ${req.params.user_id}:`,
+          error
+        );
+        res.status(500).json({ message: "Internal Server Error" });
       }
     });
-    
 
     // Feedback Related Api's
     app.post("/feedback", async (req, res) => {
