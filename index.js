@@ -101,6 +101,13 @@ async function run() {
       res.send(singleUser);
     });
 
+    // Member Related Api's
+    app.post("/add-member",async(req,res)=>{
+      const memberInfo = req.body;
+      const result = await memberCollection.insertOne(memberInfo);
+      res.send(result);
+    })
+
     // Occasions Related Api's
     app.post("/occasions", async (req, res) => {
       const occasionsData = req.body;
