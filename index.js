@@ -102,11 +102,58 @@ async function run() {
     });
 
     // Member Related Api's
-    app.post("/add-member",async(req,res)=>{
+    app.post("/add-member", async (req, res) => {
       const memberInfo = req.body;
       const result = await memberCollection.insertOne(memberInfo);
       res.send(result);
-    })
+    });
+
+    app.get("/member", async (req, res) => {
+      const result = await memberCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.delete("/member-delete/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await memberCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.get("/members-details/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await memberCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.get("/update-member/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await memberCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.patch("/updating-member", async (req, res) => {
+      const id = req.body.objectId;
+      const updateData = req.body; // The data sent from the client to update the member
+      console.log(id)
+      console.log(updateData);
+      try {
+        const query = { _id: new ObjectId(id) };
+        const update = {
+          $set: updateData, // This will update only the fields provided in the request body
+        };
+        const result = await memberCollection.updateOne(query, update);
+        if (result.modifiedCount > 0) {
+          res.send({ success: true, message: "Member updated successfully." });
+        } else {
+          res.send({ success: false, message: "No changes made or member not found." });
+        }
+      } catch (error) {
+        res.status(500).send({ success: false, message: "Failed to update member.", error: error.message });
+      }
+    });
 
     // Occasions Related Api's
     app.post("/occasions", async (req, res) => {
