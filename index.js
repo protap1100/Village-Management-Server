@@ -38,6 +38,7 @@ async function run() {
     const occasionsCollection = database.collection("Occasions");
     const postCollection = database.collection("posts");
     const userCollection = database.collection("users");
+    const galleryCollection = database.collection("gallery");
 
     // Projects Related Api's
     app.post("/projects", async (req, res) => {
@@ -137,8 +138,8 @@ async function run() {
     app.patch("/updating-member", async (req, res) => {
       const id = req.body.objectId;
       const updateData = req.body; // The data sent from the client to update the member
-      console.log(id)
-      console.log(updateData);
+      // console.log(id)
+      // console.log(updateData);
       try {
         const query = { _id: new ObjectId(id) };
         const update = {
@@ -148,11 +149,37 @@ async function run() {
         if (result.modifiedCount > 0) {
           res.send({ success: true, message: "Member updated successfully." });
         } else {
-          res.send({ success: false, message: "No changes made or member not found." });
+          res.send({
+            success: false,
+            message: "No changes made or member not found.",
+          });
         }
       } catch (error) {
-        res.status(500).send({ success: false, message: "Failed to update member.", error: error.message });
+        res.status(500).send({
+          success: false,
+          message: "Failed to update member.",
+          error: error.message,
+        });
       }
+    });
+
+    // galleryCollection Related Api's
+    app.post("/gallery", async (req, res) => {
+      const galleryData = req.body;
+      const result = await galleryCollection.insertOne(galleryData);
+      res.send(result);
+    });
+
+    app.get("/get-photos", async (req, res) => {
+      const result = await galleryCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.delete("/photos-delete/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await galleryCollection.deleteOne(query);
+      res.send(result);
     });
 
     // Occasions Related Api's
