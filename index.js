@@ -66,6 +66,42 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/get-projects/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await projectCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.patch("/update-project", async (req, res) => {
+      const id = req.body.projectId;
+      const updateProject = req.body;
+      try {
+        const query = { _id: new ObjectId(id) };
+        const update = {
+          $set: updateProject, 
+        };
+        const result = await projectCollection.updateOne(query, update);
+        if (result.modifiedCount > 0) {
+          res.send({
+            success: true,
+            message: "Occasions updated successfully.",
+          });
+        } else {
+          res.send({
+            success: false,
+            message: "No changes made or Occasions not found.",
+          });
+        }
+      } catch (error) {
+        res.status(500).send({
+          success: false,
+          message: "Failed to update Occasions.",
+          error: error.message,
+        });
+      }
+    });
+
     // User's Related Api's
     app.post("/register", async (req, res) => {
       const userInfo = req.body;
