@@ -208,6 +208,43 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/get-occasions/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await occasionsCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.patch("/update-occasions", async (req, res) => {
+      const upOccData = req.body;
+      const id = req.body.occId;
+      try {
+        const query = { _id: new ObjectId(id) };
+        const update = {
+          $set: upOccData, // This will update only the fields provided in the request body
+        };
+        const result = await occasionsCollection.updateOne(query, update);
+        // console.log(result);
+        if (result.modifiedCount > 0) {
+          res.send({
+            success: true,
+            message: "Occasions updated successfully.",
+          });
+        } else {
+          res.send({
+            success: false,
+            message: "No changes made or Occasions not found.",
+          });
+        }
+      } catch (error) {
+        res.status(500).send({
+          success: false,
+          message: "Failed to update Occasions.",
+          error: error.message,
+        });
+      }
+    });
+
     // Post Related Api's
     app.post("/post", async (req, res) => {
       const postData = req.body;
