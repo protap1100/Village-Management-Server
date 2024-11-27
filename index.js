@@ -294,8 +294,9 @@ async function run() {
     });
     app.delete("/post-delete/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
+      const filter = { user_id : id};
       const result = await postCollection.deleteOne(filter);
+      console.log(result);
       res.send(result);
     });
 
